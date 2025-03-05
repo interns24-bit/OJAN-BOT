@@ -1,0 +1,63 @@
+#include "CytronMotorDriver.h"
+
+// Configure the motor driver.
+CytronMD f1(PWM_DIR, 5, 4);   // PWM 1A = Pin 4, PWM 1B = Pin 5.
+CytronMD f2(PWM_DIR, 6, 7);   // PWM 2A = Pin 6, PWM 2B = Pin 7.
+
+#define FORWARD 'F'
+#define BACKWARD 'B'
+#define LEFT 'L'
+#define RIGHT 'R'
+#define STOP 'S'
+
+void setup() {
+  Serial.begin(9600);  // Set the baud rate for serial communication
+}
+
+void loop() {
+  if (Serial.available()) {
+    char command = Serial.read();
+    Serial.print("Received: "); Serial.println(command); // Debug output
+    executeCommand(command);
+  }
+}
+
+void executeCommand(char command) {
+  switch (command) {
+    case FORWARD:
+      // Move forward: both motors run forward
+      f1.setSpeed(255);   // Motor 1 forward at full speed
+      f2.setSpeed(255);   // Motor 2 forward at full speed
+      break;
+
+    case BACKWARD:
+      // Move backward: both motors run backward
+      f1.setSpeed(-255);  // Motor 1 backward at full speed
+      f2.setSpeed(-255);  // Motor 2 backward at full speed
+      break;
+
+    case LEFT:
+      // Turn left: left motor stops, right motor moves forward
+      f1.setSpeed(0);     // Motor 1 stops
+      f2.setSpeed(255);   // Motor 2 forward at full speed
+      break;
+
+    case RIGHT:
+      // Turn right: right motor stops, left motor moves forward
+      f1.setSpeed(255);   // Motor 1 forward at full speed
+      f2.setSpeed(0);     // Motor 2 stops
+      break;
+
+    case STOP:
+      // Stop both motors
+      f1.setSpeed(0);
+      f2.setSpeed(0);
+      break;
+
+    default:
+      // Invalid command: Stop motors as a safety measure
+      f1.setSpeed(0);
+      f2.setSpeed(0);
+      break;
+  }
+}
