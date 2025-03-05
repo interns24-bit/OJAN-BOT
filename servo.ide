@@ -1,0 +1,111 @@
+#include <Servo.h>
+#include "CytronMotorDriver.h"
+
+Servo stickServo1;  // First servo (connected to D11)
+Servo stickServo2;  // Second servo (connected to D12)
+
+CytronMD f1(PWM_DIR, 5, 4);   // Motor 1: Pin 4 (PWM), Pin 5 (DIR)
+CytronMD f2(PWM_DIR, 6, 7);   // Motor 2: Pin 6 (PWM), Pin 7 (DIR)
+
+// Calibration constants for motor speed adjustment
+const float cali_L = 1.25;
+const float cali_R = 1.25;
+
+void setup() {
+  // Attach the servo objects to their corresponding pins
+  stickServo1.attach(11);  // First servo on D11
+  stickServo2.attach(12);  // Second servo on D12
+}
+
+void loop() {
+  // Step 1: Raise the sticks upward with poised elegance
+  raiseSticks();
+  delay(2000);  // 2-second gap
+
+  // Step 2: Lower the sticks downward with smooth control
+  lowerSticks();
+  delay(2000);  // 2-second gap
+
+  // Step 3: Perform a drill-like reversal with opposite motions
+  drillReversal();
+  delay(2000);  // 2-second gap
+
+  // Step 4: Tilt or swing the sticks decisively with dramatic flair 
+  tiltSticks();
+  delay(2000);  // 2-second gap
+
+  // Step 5: Return to the starting positions victoriously
+  returnToStart();
+  delay(2000);  // 2-second gap before repeating the sequence
+}
+
+// Function: Raise the sticks upward with poised elegance 
+void raiseSticks() {
+  for (int pos = 90; pos <= 180; pos += 1) { 
+    stickServo1.write(pos);        // Move the first stick upward
+    stickServo2.write(180 - pos);  // Move the second stick downward 
+    delay(10);                     // Smooth motion
+  }
+}
+
+// Function: Lower the sticks downward with smooth control 
+void lowerSticks() {
+  for (int pos = 180; pos >= 90; pos -= 1) { 
+    stickServo1.write(pos);        // Move the first stick downward
+    stickServo2.write(180 - pos);  // Move the second stick upward 
+    delay(10);                     // Smooth motion
+  }
+}
+
+ // Function: Perform a drill-like reversal with mesmerizing counter-motion
+void drillReversal() {
+for (int pos = 90; pos <= 135; pos += 1) {
+stickServo1.write(pos); // Raise the first stick slightly to indicate victory
+stickServo2.write(pos); // Mirror the motion for the second stick
+delay(15); // Smooth motion
+}
+
+for (int pos = 135; pos >= 90; pos -= 1) {
+stickServo1.write(pos); // Return the first stick to starting position
+stickServo2.write(pos); // Mirror the motion for the second stick
+delay(15); // Smooth motion
+}
+}
+
+// Function: Tilt or swing the sticks decisively with dramatic flair 
+void tiltSticks() {
+  // Lower the servos directly to their neutral position 
+  for (int pos = 180; pos >= 90; pos -= 1) { 
+    stickServo1.write(pos);        // Move the first stick downward
+    stickServo2.write(180 - pos);  // Mirror the motion for the second stick
+    delay(10);                     // Smooth motion
+  }
+
+  // Move the robot to the RIGHT for an extended duration 
+  robot_movement(80, -50);         // Left motor forward, right motor backward 
+  delay(1000);                     // Extend the movement for 1 second
+
+  // Stop the motors after the extended movement
+  robot_movement(0, 0);
+}
+
+// Function: Return to the starting positions victoriously
+void returnToStart() {
+  for (int pos = 90; pos <= 135; pos += 1) { 
+    stickServo1.write(pos);        // Raise the first stick slightly to indicate victory
+    stickServo2.write(180 - pos);  // Mirror the motion for the second stick
+    delay(10);                     // Smooth motion
+  }
+
+  for (int pos = 135; pos >= 90; pos -= 1) { 
+    stickServo1.write(pos);        // Return the first stick to starting position
+    stickServo2.write(180 - pos);  // Mirror the motion for the second stick
+    delay(10);                     // Smooth motion
+  }
+}
+
+// Function: Control robot movement
+void robot_movement(int sL, int sR) {
+  f1.setSpeed(sL * cali_L);   // Set speed for the left motor
+  f2.setSpeed(sR * cali_R);   // Set speed for the right motor
+}
