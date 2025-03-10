@@ -1,0 +1,90 @@
+#include "CytronMotorDriver.h"
+
+// Configure the motor driver
+CytronMD f1(PWM_DIR, 5, 4);   // Motor 1: PWM = Pin 5, DIR = Pin 4
+CytronMD f2(PWM_DIR, 6, 7);   // Motor 2: PWM = Pin 6, DIR = Pin 7
+
+// Ultrasonic sensor pins
+const int trigPin = 17;
+const int echoPin = 16;
+
+// Constants
+const int OBSTACLE_DISTANCE = 10; // Distance threshold in cm
+const int MOTOR_SPEED = 128;      // Half speed (range: -255 to 255)
+
+// Variables
+long duration;
+int distance;
+
+void setup() {
+  // Initialize ultrasonic sensor pins
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  // Start serial communication (optional for debugging)
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Measure distance from ultrasonic sensor
+  distance = getDistance();
+
+  // Print distance for debugging
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Obstacle avoidance logic
+  if (distance > 0 && distance <= OBSTACLE_DISTANCE) {
+    avoidObstacle();
+  } else {
+    moveForward();
+  }
+
+  // delay(100); // Delay to avoid excessive processing
+}
+
+// Function to measure distance using the ultrasonic sensor
+int getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  int distance = duration * 0.034 / 2; // Convert to cm
+  return distance;
+}
+
+// Function to move forward
+void moveForward() {
+  f1.setSpeed(MOTOR_SPEED);  // Motor 1 runs forward at half speed
+  f2.setSpeed(MOTOR_SPEED);  // Motor 2 runs forward at half speed
+}
+
+// Function to stop motors
+void stopMotors() {
+  f1.setSpeed(0); // Stop Motor 1
+  f2.setSpeed(0); // Stop Motor 2
+}
+
+// Function to avoid obstacle
+void avoidObstacle() {
+  stopMotors(); // Stop motors
+  delay(500);
+
+  // Reverse
+  f1.setSpeed(-MOTOR_SPEED); // Motor 1 runs backward
+  f2.setSpeed(-MOTOR_SPEED); // Motor 2 runs backward
+  delay(1000);
+
+  // Turn left (adjust turning duration as needed)
+  f1.setSpeed(-MOTOR_SPEED); // Motor 1 runs backward
+  f2.setSpeed(MOTOR_SPEED);  // Motor 2 runs forward
+  delay(1000);
+
+  stopMotors(); // Stop after turning
+  delay(500);
+}
